@@ -3,7 +3,7 @@
 int[] numeros = new int[99],sorteados = new int[99];
 int[,] cartela1 = new int[5, 5], aux = new int[5,5];
 bool ganhador_coluna = false, ganhador_linha = false, ganhador_cartela = false;
-int rodada_coluna = 0, rodada_linha = 0, rodada_cartela = 0;
+int rodada_coluna = 0, rodada_linha = 0, rodada_cartela = 0, escolha = 1;
 
 int[,] criarCartela()
 {
@@ -119,19 +119,7 @@ void sorteiaNumeros()
 
 void imprimirNumerosSorteados(int num,int indice)
 {
-    Console.WriteLine($"---{indice + 1}º número sorteado: {num} \n");
-    if ((indice + 1 + 1) < 99)
-    {
-        Console.WriteLine($"pressione qualqer tecla pra exibir o proximo número!");
-    }
-    else
-    {
-        if (((indice + 1 + 1) == 99))
-        {
-            Console.WriteLine($"pressione qualqer tecla pra exibir o ultimo número!");
-        }
-    }
-    Console.ReadKey();
+    Console.WriteLine($"---{indice + 1}º número sorteado: {num} \n");   
 }
 
 int verificaLinha(int qt_jogadores, int qt_cartelas,int[,] count_linhas) 
@@ -162,6 +150,7 @@ int verificaColuna(int qt_jogadores, int qt_cartelas, int[,] count_colunas)
             if (count_colunas[i, j] == 1)
             {
                 contador++;
+                break;
             }
         }
     }
@@ -187,13 +176,70 @@ int verificaGanahdorCartela(int qt_jogadores, int qt_cartelas, int[,] count_cart
     return contador;
 }
 
+void atribuirPontosColunaLinha(int[,] contador,int qt_jogadores, int qt_cartelas, int[] pontos_jogador)
+{
+    for (int jogador = 0; jogador < qt_jogadores; jogador++)
+    {
+        for (int cartelas = 0; cartelas < qt_cartelas; cartelas++)
+        {
+            if (contador[jogador,cartelas] == 1)
+            {
+                pontos_jogador[jogador]++;
+            }
+        }
+    }
+}
+
+void atribuirPontosCartela(int pontos, int[,] contador, int qt_jogadores, int qt_cartelas, int[] pontos_jogador)
+{
+    for (int jogador = 0; jogador < qt_jogadores; jogador++)
+    {
+        for (int cartelas = 0; cartelas < qt_cartelas; cartelas++)
+        {
+            if (contador[jogador, cartelas] == 1)
+            {
+                pontos_jogador[jogador] += pontos;
+            }
+        }
+    }
+}
+
+void imprimirPontos(int qt_jogadores,int[] pontos_jogador)
+{
+    for(int jogador = 0; jogador < qt_jogadores; jogador++)
+    {
+        Console.WriteLine($"O {jogador + 1}º jogador teve {pontos_jogador[jogador]} pontos");
+    }
+}
+
+void exibirGanhador(int qt_jogadores, int qt_cartelas, int[,] contador, string texto)
+{
+    bool achou = false;
+    for (int jogador = 0; jogador < qt_jogadores; jogador++)
+    {
+        for (int cartela = 0; cartela < qt_cartelas; cartela++)
+        {
+            if (contador[jogador,cartela] == 1)
+            {
+                Console.WriteLine($"O jogador {jogador +1} ganhou a {texto} com a cartela {cartela + 1}");
+                achou = true;
+                break;
+            }
+        }
+        if (achou == true)
+        {
+            break;
+        }
+    }
+}
+
 void verificaCartela(int[,] matriz, int[,] matriz_aux,int sorteado ,ref int contador_linha, ref int contador_coluna, ref int contador_cartela)
 {
     if (ganhador_coluna == false) 
     {
         rodada_coluna = sorteado;
     }
-    if(ganhador_linha = false)
+    if(ganhador_linha == false)
     {
         rodada_linha = sorteado;
     }
@@ -256,75 +302,150 @@ void verificaCartela(int[,] matriz, int[,] matriz_aux,int sorteado ,ref int cont
                 }
             }
         }
-        imprimirCartela(matriz,matriz_aux);
     }
+    imprimirCartela(matriz, matriz_aux);
 }
 
-int qtd_jogadores = quantidadeJogador();
-int qtd_cartelas = quantidadeCartelas();
-int[][][,] vetor_cartelas = new int[qtd_jogadores][][,];
-int[][][,] vetor_cartelas_aux = new int[qtd_jogadores][][,];
-int[,] contador_linha = new int[qtd_jogadores,qtd_cartelas];
-int[,] contador_coluna = new int[qtd_jogadores, qtd_cartelas];
-int[,] contador_cartela = new int[qtd_jogadores, qtd_cartelas];
-//vetor_cartelas[1][4] = new int[5,5];
+do {
+    ganhador_coluna = false; ganhador_linha = false; ganhador_cartela = false;
+    rodada_coluna = 0; rodada_linha = 0; rodada_cartela = 0;
+
+    int qtd_jogadores = quantidadeJogador();
+    int qtd_cartelas = quantidadeCartelas();
+    int[][][,] vetor_cartelas = new int[qtd_jogadores][][,];
+    int[][][,] vetor_cartelas_aux = new int[qtd_jogadores][][,];
+    int[,] contador_linha = new int[qtd_jogadores, qtd_cartelas];
+    int[,] contador_coluna = new int[qtd_jogadores, qtd_cartelas];
+    int[,] contador_cartela = new int[qtd_jogadores, qtd_cartelas];
+    int[] jogador_pontos = new int[qtd_jogadores];
+    //vetor_cartelas[1][4] = new int[5,5];
 
 
-// cria o numero maximo de cartelas por jogador;
-for (int i = 0; i < qtd_jogadores; i++)
-{
-    vetor_cartelas[i] = new int[qtd_cartelas][,];
-    vetor_cartelas_aux[i] = new int[qtd_cartelas][,];
-    for (int j = 0; j < qtd_cartelas; j++)
-
+    // cria o numero maximo de cartelas por jogador;
+    for (int i = 0; i < qtd_jogadores; i++)
     {
-        vetor_cartelas[i][j] = criarCartela();
-        vetor_cartelas_aux[i][j] = new int[5, 5];
-        int[,] cartela = vetor_cartelas[i][j];
-        imprimirCartela(cartela, vetor_cartelas_aux[i][j]);
-        Console.ReadLine();
-    }
-}
-
-sorteiaNumeros();
-int count_ganahdores_linhas = 0, count_ganhadores_coluna = 0, count_ganhadores_cartela = 0;
-for (int rodadas = 0; rodadas < 99; rodadas++)
-{
-    int sorteado = sorteados[rodadas];
-    imprimirNumerosSorteados(sorteado, rodadas);
-    for (int i = 0; i < qtd_jogadores; i++) {//jogador
-
-        for (int j = 0; j < qtd_cartelas; j++) // cartela
+        vetor_cartelas[i] = new int[qtd_cartelas][,];
+        vetor_cartelas_aux[i] = new int[qtd_cartelas][,];
+        for (int j = 0; j < qtd_cartelas; j++)
         {
-            int[,] cartela = vetor_cartelas[i][j];        
-            int[,] cartela_aux = vetor_cartelas_aux[i][j];        
-            verificaCartela(cartela, cartela_aux,sorteado ,ref contador_linha[i,j], ref contador_coluna[i,j], ref contador_cartela[i,j]);
-            Console.WriteLine(" jogador " + i + ", cartela " + j + ", contador linha: " + contador_linha[i,j]);
-
-            // Console.ReadLine();
-
+            Console.WriteLine($"\n jogador {i + 1}, cartela {j + 1} ");
+            vetor_cartelas[i][j] = criarCartela();
+            vetor_cartelas_aux[i][j] = new int[5, 5];
+            int[,] cartela = vetor_cartelas[i][j];
+            imprimirCartela(cartela, vetor_cartelas_aux[i][j]);
+            Console.ReadLine();
         }
     }
+
+    sorteiaNumeros();
+    int count_ganahdores_linhas = 0, count_ganhadores_coluna = 0, count_ganhadores_cartela = 0;
+    for (int rodadas = 0; rodadas < 99; rodadas++)
+    {
+        int sorteado = sorteados[rodadas];
+        imprimirNumerosSorteados(sorteado, rodadas);
+        for (int i = 0; i < qtd_jogadores; i++) {//jogador
+
+            for (int j = 0; j < qtd_cartelas; j++) // cartela
+            {
+                Console.WriteLine("\n jogador " + (i + 1) + ", cartela " + (j + 1));
+                int[,] cartela = vetor_cartelas[i][j];
+                int[,] cartela_aux = vetor_cartelas_aux[i][j];
+                verificaCartela(cartela, cartela_aux, sorteado, ref contador_linha[i, j], ref contador_coluna[i, j], ref contador_cartela[i, j]);
+
+
+                // Console.ReadLine();
+
+            }
+        }
+        if (ganhador_cartela == true)
+        {
+            count_ganhadores_cartela = verificaGanahdorCartela(qtd_jogadores, qtd_cartelas, contador_cartela);
+            if (count_ganhadores_cartela == 1)
+            {
+                int pt = 5;
+                atribuirPontosCartela(pt, contador_cartela, qtd_jogadores, qtd_cartelas, jogador_pontos);
+            } else
+            {
+                int pt = 3;
+                atribuirPontosCartela(pt, contador_cartela, qtd_jogadores, qtd_cartelas, jogador_pontos);
+            }
+            break;
+        }
+        if (rodadas < 97)
+        {
+            Console.WriteLine("pressione qualquer tecla pra exibir o proxímo número!");
+        }
+        else
+        {
+            Console.WriteLine("pressione qualquer tecla pra exibir o último número");
+        }
+        Console.ReadKey();
+    }
+    Console.WriteLine("-----BINGO!!!!!!!!!!!------");
     if (ganhador_linha == true)
     {
-       count_ganahdores_linhas  = verificaLinha(qtd_jogadores, qtd_cartelas, contador_linha);
+        count_ganahdores_linhas = verificaLinha(qtd_jogadores, qtd_cartelas, contador_linha);
+        if (count_ganahdores_linhas == 1)
+        {
+            atribuirPontosColunaLinha(contador_linha, qtd_jogadores, qtd_cartelas, jogador_pontos);
+        }
     }
     if (ganhador_coluna == true)
     {
-        count_ganhadores_coluna = verificaColuna(qtd_jogadores,qtd_cartelas, contador_coluna);
+        count_ganhadores_coluna = verificaColuna(qtd_jogadores, qtd_cartelas, contador_coluna);
+        if (count_ganhadores_coluna == 1)
+        {
+            atribuirPontosColunaLinha(contador_coluna, qtd_jogadores, qtd_cartelas, jogador_pontos);
+        }
     }
-    if (ganhador_cartela == true)
+    if (count_ganhadores_cartela != 1)
     {
-        count_ganhadores_cartela = verificaGanahdorCartela(qtd_jogadores,qtd_cartelas, contador_cartela);
-        break;
+        Console.WriteLine("A cartela EMPATOUU!!");
+        imprimirPontos(qtd_jogadores, jogador_pontos);
+        if (count_ganhadores_coluna == 1)
+        {
+            exibirGanhador(qtd_jogadores, qtd_cartelas, contador_coluna, "coluna");
+        }
+        else
+        {
+            Console.WriteLine(" A coluna empatou");
+        }
+        if (count_ganahdores_linhas == 1)
+        {
+            exibirGanhador(qtd_jogadores, qtd_cartelas, contador_linha, "linha");
+        }
+        else
+        {
+            Console.WriteLine(" A linha empatou");
+        }
     }
- 
-}
+    else
+    {
+        exibirGanhador(qtd_jogadores, qtd_cartelas, contador_cartela, "cartela");
+        if (count_ganhadores_coluna == 1)
+        {
+            exibirGanhador(qtd_jogadores, qtd_cartelas, contador_coluna, "coluna");
+        }
+        else
+        {
+            Console.WriteLine(" A coluna empatou");
+        }
+        if (count_ganahdores_linhas == 1)
+        {
+            exibirGanhador(qtd_jogadores, qtd_cartelas, contador_linha, "linha");
+        }
+        else
+        {
+            Console.WriteLine(" A linha empatou");
+        }
+        imprimirPontos(qtd_jogadores, jogador_pontos);
+    }
 
+    Console.WriteLine("Deseja fazer outro jogo? 1 - sim, numero diferentes de 1 -  não");
+    escolha = int.Parse(Console.ReadLine());
+    Console.Clear();
 
-//cartelaDoJogadorUm[0][0]
+} while (escolha == 1);
 
-Console.WriteLine("Para");
-Console.ReadLine();
 
 
